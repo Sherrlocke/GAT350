@@ -212,25 +212,36 @@ namespace PostProcess
             {  1,  2,  1 },
         };
 
-        for (int i = 0; i < source.width * source.height; i++) {
+
+        for (int i = 0; i < colorBuffer.width * colorBuffer.height; i++)
+        {
+            int x = i % source.width;
+            int y = i / source.width;
+
+            if (x < 1 || x + 1 >= source.width || y < 1 || y + 1 >= source.height) continue;
+
             int16_t h = 0;
             int16_t v = 0;
+
             for (int iy = -1; iy <= 1; iy++)
             {
                 for (int ix = -1; ix <= 1; ix++)
                 {
-                    h += ((color_t*)source.data)[(h + ix) + (v + iy) * source.width].r * kh[1 + iy][1 + ix];
-                    v += ((color_t*)source.data)[(h + ix) + (v + iy) * source.width].r * kv[1 + iy][1 + ix];
+                    h += ((color_t*)source.data)[(x + ix) + (y + iy) * source.width].r * kh[1 + iy][1 + ix];
+                    v += ((color_t*)source.data)[(x + ix) + (y + iy) * source.width].r * kv[1 + iy][1 + ix];
                 }
             }
 
-            color_t& color = ((color_t*)colorBuffer.data)[i];
             uint16_t result = (uint16_t)sqrt((h * h) + (v * v));
             result = (result > threshold) ? result : 0;
+
             uint8_t c = (result < 0) ? 0 : ((result > 255) ? 255 : result);
+
+            color_t& color = ((color_t*)colorBuffer.data)[i];
             color.r = c;
             color.g = c;
             color.b = c;
+
         }
     }
 

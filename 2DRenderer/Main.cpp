@@ -17,7 +17,7 @@ int main(int, char**)
 	std::unique_ptr<Framebuffer> framebuffer = std::make_unique<Framebuffer>(renderer.get(), renderer->width, renderer->height);
 
 	std::unique_ptr<Image> image = std::make_unique<Image>();
-	image->Load("../resources/flower.bmp");
+	image->Load("../resources/flower.bmp", 210);
 	image->Flip();
 
 	bool quit = false;
@@ -76,6 +76,11 @@ int main(int, char**)
 
 
 		framebuffer->DrawImage(30, 30, image.get());
+
+		for (int i = 0; i < 40; i++)
+		{
+			framebuffer->DrawRect(rand() % renderer->width, rand() % renderer->height, 100, 100, { (uint8_t)((rand() % 2) * 255), (uint8_t)((rand() % 2) * 255), (uint8_t)((rand() % 2) * 255), (uint8_t)(rand() % 256) });
+		}
 
 		std::unique_ptr<Image> image1 = std::make_unique<Image>(*image.get());
 		PostProcess::BoxBlur(image1->colorBuffer);

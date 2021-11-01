@@ -40,14 +40,23 @@ void Framebuffer::Clear(const color_t& color)
 
 void Framebuffer::DrawPoint(int x, int y, const color_t& color)
 {
+
     if (x < 0 || x >= colorBuffer.width || y < 0 || y >= colorBuffer.height) return;
 
-    ((color_t*)colorBuffer.data)[x + y * colorBuffer.width] = color;
+    // alpha blending
 
-    /*buffer[index] = color.r;
-    buffer[index + 1] = color.g;
-    buffer[index + 2] = color.b;
-    buffer[index + 3] = color.a;*/
+    uint8_t alpha = color.a;
+
+    uint8_t invAlpha = 255 - alpha; // 1(255) - alpha
+
+    color_t& destColor = ((color_t*)(colorBuffer.data))[x + y * colorBuffer.width];
+
+    destColor.r = ((color.r * alpha) + (destColor.r * invAlpha)) >> 8;
+
+    destColor.g = ((color.g * alpha) + (destColor.g * invAlpha)) >> 8;
+
+    destColor.b = ((color.b * alpha) + (destColor.b * invAlpha)) >> 8;
+
 }
 
 void Framebuffer::DrawRect(int x, int y, int rect_width, int rect_height, const color_t& color)
@@ -239,7 +248,7 @@ void Framebuffer::DrawQuadraticCurve(int x1, int y1, int x2, int y2, int x3, int
 
         int sx2 = (int)a2 * x1 + b2 * x2 + c2 * x3;
         int sy2 = (int)a2 * y1 + b2 * y2 + c2 * y3;
-        
+
         DrawLine(sx1, sy1, sx2, sy2, color);
     }
 
@@ -253,8 +262,8 @@ void Framebuffer::DrawCubicCurve(int x1, int y1, int x2, int y2, int x3, int y3,
         float t2 = (i + 1) * dt;
 
         float a1 = (float)pow((1.0f - t1), 3.0f);
-        float b1 = (float) 3.0f * pow((1 - t1), 2.0f);
-        float c1 = (float) 3.0f * pow((1 - t1), 2.0f);
+        float b1 = (float)3.0f * pow((1 - t1), 2.0f);
+        float c1 = (float)3.0f * pow((1 - t1), 2.0f);
         float d1 = (float)pow(t1, 3.0f);
 
         int sx1 = (int)(a1 * x1 + b1 * x2 + c1 * x3 + d1 * x4);
@@ -273,7 +282,7 @@ void Framebuffer::DrawCubicCurve(int x1, int y1, int x2, int y2, int x3, int y3,
 
 }
 
-void Framebuffer::DrawImage(int x1, int y1, class Image* image)
+void Framebuffer::DrawImage(int x1, int y1, Image* image)
 {
     for (int y = 0; y < image->colorBuffer.height; y++)
     {
@@ -281,9 +290,9 @@ void Framebuffer::DrawImage(int x1, int y1, class Image* image)
         for (int x = 0; x < image->colorBuffer.width; x++)
         {
             int sx = x1 + x;
-            if (sx > colorBuffer.width || sy > colorBuffer.height) continue;
-
-            ((color_t*)colorBuffer.data)[sx + (sy * colorBuffer.width)] = ((color_t*)image->colorBuffer.data)[x + (y * image->colorBuffer.width)];
+            if (sx < 0 || sx >= colorBuffer.width || sy < 0 || sy >= colorBuffer.height) continue;
+            color_t color = ((color_t*)image->colorBuffer.data)[x + (y * image->colorBuffer.width)];
+            DrawPoint(sx, sy, color);
         }
     }
 }
