@@ -13,7 +13,7 @@
 class Scene
 {
 public:
-    glm::vec3 Trace(const ray_t& r, float tMin, float tMax, raycasthit_t& hit);
+    glm::vec3 Trace(const ray_t& r, float tMin, float tMax, raycasthit_t& hit, int depth);
     void Add(std::unique_ptr<Geometry> geometry);
 
 
